@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
 )
 
-// 1. Structs correspondant au JSON de la mini API
 type Game struct {
 	ID     int      `json:"id"`
 	Name   string   `json:"name"`
@@ -27,7 +27,15 @@ type Tournament struct {
 	Lng    float64 `json:"lng"`
 }
 
-// 2. Client HTTP avec timeout
+type APIError struct {
+	StatusCode int
+	Message    string
+}
+
+func (e *APIError) Error() string {
+	return fmt.Sprintf("API HTTP %d : %s", e.StatusCode, e.Message)
+}
+
 func newAPIClient() *http.Client {
 	return &http.Client{
 		Timeout: 3 * time.Second,
@@ -45,7 +53,10 @@ func getJSON[T any](client *http.Client, endpoint string) (T, error) {
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 256))
-		return zero, fmt.Errorf("réponse HTTP %d sur %s : %s", resp.StatusCode, endpoint, string(body))
+		return zero, &APIError{
+			StatusCode: resp.StatusCode,
+			Message:    string(body),
+		}
 	}
 
 	var result T
@@ -56,10 +67,22 @@ func getJSON[T any](client *http.Client, endpoint string) (T, error) {
 	return result, nil
 }
 
-func FetchGames(client *http.Client, baseURL string) ([]Game, error) {
-	return getJSON[[]Game](client, baseURL+"/api/games")
+func FetchGames(client *http.Client, baseURL string, query string) ([]Game, error) {
+	endpoint := baseURL + "/api/games"
+	if query != "" {
+		endpoint += "?name=" + url.QueryEscape(query)
+	}
+	return getJSON[[]Game](client, endpoint)
+}
+
+func FetchGameByID(client *http.Client, baseURL string, id int) (Game, error) {
+	return getJSON[Game](client, fmt.Sprintf("%s/api/games/%d", baseURL, id))
 }
 
 func FetchTournaments(client *http.Client, baseURL string) ([]Tournament, error) {
 	return getJSON[[]Tournament](client, baseURL+"/api/tournaments")
+}
+
+func FetchTournamentsByGameID(client *http.Client, baseURL string, gameID int) ([]Tournament, error) {
+	return getJSON[[]Tournament](client, fmt.Sprintf("%s/api/games/%d/tournaments", baseURL, gameID))
 }

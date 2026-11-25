@@ -1,0 +1,29 @@
+{{ define "jeu_detail" }}
+{{ template "header" . }}
+
+	<p><a href="/jeux">← Retour à la liste des jeux</a></p>
+
+	<h1>{{ .Game.Name }}</h1>
+	<p><strong>Année :</strong> {{ .Game.Year }}</p>
+	<p><strong>Studio :</strong> {{ .Game.Studio }}</p>
+	{{ if .Game.Genres }}
+		<p><strong>Genres :</strong>
+			{{ range $i, $g := .Game.Genres }}{{ if $i }}, {{ end }}{{ $g }}{{ end }}
+		</p>
+	{{ end }}
+
+	<h2>Tournois associés</h2>
+	{{ if .Tournaments }}
+		<ul class="tournaments-list">
+			{{ range .Tournaments }}
+				<li>
+					<strong>{{ .Name }}</strong> — {{ .City }} ({{ .Date }})
+				</li>
+			{{ end }}
+		</ul>
+	{{ else }}
+		<p>Aucun tournoi prévu pour ce jeu.</p>
+	{{ end }}
+
+{{ template "footer" . }}
+{{ end }}

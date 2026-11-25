@@ -1,0 +1,29 @@
+{{ define "jeux" }}
+{{ template "header" . }}
+
+	<h1>Liste des jeux</h1>
+
+	<form method="GET" action="/jeux" class="search-form">
+		<input type="text" name="q" value="{{ .Query }}" placeholder="Rechercher un jeu...">
+		<button type="submit">Rechercher</button>
+	</form>
+
+	{{ if .Query }}
+		<p class="search-info">Vous avez cherché : {{ .Query }}</p>
+	{{ end }}
+
+	{{ if .Games }}
+		<ul class="games-list">
+			{{ range .Games }}
+				<li>
+					<a href="/jeux/{{ .ID }}">{{ .Name }}</a>
+					({{ .Year }} — {{ .Studio }})
+				</li>
+			{{ end }}
+		</ul>
+	{{ else }}
+		<p>Aucun jeu trouvé.</p>
+	{{ end }}
+
+{{ template "footer" . }}
+{{ end }}

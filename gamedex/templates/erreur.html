@@ -1,0 +1,9 @@
+{{ define "erreur" }}
+{{ template "header" . }}
+
+	<h1>Erreur {{ .StatusCode }}</h1>
+	<p>{{ .Message }}</p>
+	<p><a href="/jeux">Retour à la liste des jeux</a></p>
+
+{{ template "footer" . }}
+{{ end }}
